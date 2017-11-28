@@ -39,22 +39,19 @@ LM
   </div>
   <div class="w3-bar-block">
     <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="close_it()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding w3-blue"><i class="fa fa-users fa-fw"></i>  Overview</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-eye fa-fw"></i>  Views</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-users fa-fw"></i>  Traffic</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bullseye fa-fw"></i>  Geo</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-diamond fa-fw"></i>  Orders</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>  News</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bank fa-fw"></i>  General</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-history fa-fw"></i>  History</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-cog fa-fw"></i>  Settings</a><br><br>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-users fa-fw"></i>  Overview</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-eye fa-fw"></i>  Courses</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-users fa-fw"></i>  Team</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bullseye fa-fw"></i>  Sign Out</a><br><br>
 	
 	<form id="logForm" class="w3-container w3-margin">
-		Login:<br>
-		<input type="text" name="login">
+		<label for="login">
+		Login:</label><br>
+		<input type="text" name="login" id="login">
 		<br>
-		Password:<br>
-		<input type="text" name="password" >
+		<label for="password">
+		Password:</label><br>
+		<input type="text" name="password" id="password">
 		<br><br>
 		<input type="submit" value="Submit" onClick="login()">
 	</form> 
@@ -71,34 +68,25 @@ LM
   </header>
 
   <div class="w3-row-padding w3-margin-bottom">
-    <div class="w3-quarter">
+    <div class="w3-third" id="courses">
       <div class="w3-container w3-red w3-padding-16">
-        <div class="w3-left"><i class="fa fa-comment w3-xxxlarge"></i></div>
-        <div class="w3-right">
-        </div>
-        <div class="w3-clear"></div>
-        <h4>Messages</h4>
-      </div>
-    </div>
-    <div class="w3-quarter">
-      <div class="w3-container w3-blue w3-padding-16">
         <div class="w3-left"><i class="fa fa-eye w3-xxxlarge"></i></div>
         <div class="w3-clear"></div>
         <h4>Courses</h4>
       </div>
     </div>
-    <div class="w3-quarter">
-      <div class="w3-container w3-teal w3-padding-16">
-        <div class="w3-left"><i class="fa fa-share-alt w3-xxxlarge"></i></div>
-        <div class="w3-clear"></div>
-        <h4>FAQ</h4>
-      </div>
-    </div>
-    <div class="w3-quarter">
-      <div class="w3-container w3-orange w3-text-white w3-padding-16">
+    <div class="w3-third" id="team">
+      <div class="w3-container w3-blue w3-padding-16">
         <div class="w3-left"><i class="fa fa-users w3-xxxlarge"></i></div>
         <div class="w3-clear"></div>
         <h4>Team</h4>
+      </div>
+    </div>
+    <div class="w3-third" id="about">
+      <div class="w3-container w3-teal w3-padding-16">
+        <div class="w3-left"><i class="fa fa-share-alt w3-xxxlarge"></i></div>
+        <div class="w3-clear"></div>
+        <h4>About</h4>
       </div>
     </div>
   </div>
@@ -107,7 +95,11 @@ LM
   
  </div>
   
-<script src="js/script.js">
+<script>
+
+document.getElementById("courses").addEventListener("click", courses);
+document.getElementById("team").addEventListener("click", team);
+document.getElementById("about").addEventListener("click", about);
 
 var mySidebar = document.getElementById("mySidebar");
 
@@ -132,6 +124,20 @@ function login() {
 
 }
 
+function courses(){
+
+}
+
+function team() {
+
+}
+
+function about() {
+
+}
+
+</script>
+<script src="js/script.js">
 </script>
 
 </body>
