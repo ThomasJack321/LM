@@ -4,9 +4,30 @@ function $(id) {
   return document.getElementById(id);
 }
 
-function Category(id, name) {
+Object.prototype.hide = function () {
+  this.style.display = "none";
+}
+
+Object.prototype.show = function () {
+  this.style.display = "initial";
+}
+
+var Category = function (id, name, description) {
   this.id = id;
   this.name = name;
+  this.description = description;
+
+  this.getName = function() {
+  	return this.name;
+	}
+
+	this.getDescription = function() {
+  	return this.description;
+	}
+
+	this.getId = function () {
+  	return this.id;
+	}
 }
 
 var User = function (id, categories, login, password) {
@@ -50,7 +71,7 @@ var Collection = function (itemCollection) {
   this.findBy = function (subject, value) {
     var item = null;
     for(var i = 0; i < this.container.length; i++) {
-      if (this.container[i][subject] === value) {
+      if (this.container[i][subject] == value) {
         item = this.container[i];
         break;
       }
@@ -81,13 +102,120 @@ var CategoriesCollection = new Collection([
 ]);
 
 var usersCollection = new UsersCollection([
-  new User(1, [{id: 1, progress: 0.5}, {id: 2, progress: 0.3}], 'qwerty', '123456'),
-  new User(2, [{id: 2, progress: 0.6}, {id: 3, progress: 0.9}], 'login', '123456'),
-  new User(3, [{id: 1, progress: 0.2}, {id: 3, progress: 0.3}], 'qazwsx', '123456')
+  new User(1, [{id: 1, progress: 50}, {id: 2, progress: 30}], 'qwerty', '123456'),
+  new User(2, [{id: 2, progress: 60}, {id: 3, progress: 90}], 'login', '123456'),
+  new User(3, [{id: 1, progress: 20}, {id: 3, progress: 30}], 'qazwsx', '123456')
 ]);
 
+var LoginInitialization = function(loggedUser) {
+  this.user = loggedUser;
+
+  this.initialize = function() {
+    this.dumpWelcomeMessage();
+    this.setWelcomeLabel(this.user);
+    this.showDashboard();
+  }
+
+  this.dumpWelcomeMessage = function() {
+    alert('You have been logged in.');
+  }
+
+  this.setWelcomeLabel = function(user) {
+    WELCOME_PANEL.getElementsByTagName('span')[0].textContent = 'Welcome, ' + user.login + '!';
+    WELCOME_PANEL.show();
+  }
+
+  this.showDashboard = function () {
+    DASHBOARD_TAB.show();
+  }
+}
+
+var CoursesHandler = function() {
+  this.generateCoursesOverview = function(user) {
+    COURSES_TAB.innerHTML = "";
+
+    var categories = user.getUserCategories();
+    var coursesBlock = document.createElement('div');
+    for (var i = 0 ; i < categories.length; i++) {
+      coursesBlock.appendChild(this.createNodeForCategory(CategoriesCollection.findBy('id', categories[i].id)));
+    }
+
+    COURSES_TAB.appendChild(coursesBlock);
+  }
+
+  this.createNodeForCategory = function(category) {
+    var listElement = document.createElement('div');
+    listElement.className = 'category';
+    listElement.dataset.categoryId = category.getId();
+    listElement.textContent = category.getName();
+    listElement.addEventListener('click', function() {
+      var categoryId = this.dataset.categoryId;
+      var category = CategoriesCollection.findBy('id', categoryId);
+
+      if (null !== category) {
+        COURSES_TAB.hide();
+        var categoryHandler = new CategoryHandler(category);
+        var categoryTab = categoryHandler.createCategoryPage(loggedUser);
+        categoryTab.show();
+        CONTENT_BLOCK.appendChild(categoryTab);
+
+        BACK_ARROW.customAction = function () {
+          categoryTab.hide();
+          COURSES_TAB.click();
+        }
+      }
+    });
+
+    return listElement;
+  }
+}
+
+
+var CategoryHandler = function (category) {
+  this.category = category;
+
+  this.createCategoryPage = function (user) {
+    var categoryTab = document.createElement('div');
+    var header = document.createElement('h2');
+    header.textContent = this.category.getName();
+    var description = document.createElement('p');
+    description.textContent = this.category.getDescription();
+
+    var progress = document.createElement('progress');
+    progress.max = 100;
+    var userCategories = user.getUserCategories();
+    for (var i = 0; i < userCategories.length; i++) {
+      if (this.category.getId() === userCategories[i].id) {
+        progress.value = userCategories[i].progress;
+      }
+    }
+
+    categoryTab.appendChild(header);
+    categoryTab.appendChild(description);
+    categoryTab.appendChild(progress);
+
+    return categoryTab;
+  }
+}
+
 var LOGIN_FORM = $('logForm');
-var WELCOME_PANEL = $('welcomeLabel')
+var WELCOME_PANEL = $('welcomePanel')
+var DASHBOARD_TAB = $('mainshit');
+var TEAM_TAB = $('teamPage');
+var ABOUT_TAB = $('aboutPage');
+var COURSES_TAB = $('coursesPage');
+var CONTENT_BLOCK = $('content');
+var BACK_ARROW = $('back_arrow');
+var COURSES_BUTTON = $('courses');
+
+//LOGIN_FORM.show();
+DASHBOARD_TAB.hide();
+WELCOME_PANEL.hide();
+TEAM_TAB.hide();
+ABOUT_TAB.hide();
+COURSES_TAB.hide();
+BACK_ARROW.hide();
+
 var loggedUser = null;
 
 LOGIN_FORM.addEventListener('submit', function(event) {
@@ -99,44 +227,27 @@ LOGIN_FORM.addEventListener('submit', function(event) {
   if (usersCollection.login(login, password)) {
     var user = usersCollection.findBy('login', login);
     loggedUser = user;
-    var userCategories = user.getUserCategories();
-
-    console.log(user);
-    for (var i = 0; i < userCategories.length; i++) {
-      console.log(userCategories[i]);
-    }
     var loginInitialization = new LoginInitialization(user);
     loginInitialization.initialize();
 
-    this.style.visibility = 'hidden';
+    this.hide();
   } else {
-    console.log('nieprawidlowe dane');
+    alert('Provided credentials are incorrect')
   }
-
 });
 
-var LoginInitialization = function(loggedUser) {
-  this.user = loggedUser;
+COURSES_BUTTON.addEventListener('click', function() {
+	var coursesHandler = new CoursesHandler();
+	coursesHandler.generateCoursesOverview(loggedUser);
+  DASHBOARD_TAB.hide();
+  COURSES_TAB.show();
 
-  this.initialize = function() {
-    this.hideLoginForm();
-    this.dumpWelcomeMessage();
-    this.setWelcomeLabel(this.user);
-  }
+	BACK_ARROW.show();
+	BACK_ARROW.customAction = function () {
+		COURSES_TAB.hide();
+		DASHBOARD_TAB.show();
+	}
 
-  this.hideLoginForm = function() {
-    LOGIN_FORM.style.visibility = 'hidden';
-  }
-
-  this.dumpWelcomeMessage = function() {
-    alert('You have been logged in.');
-  }
-
-  this.setWelcomeLabel = function(user) {
-    WELCOME_PANEL.getElementsByTagName('span')[0].textContent = 'Welcome, ' + user.login + '!';
-    WELCOME_PANEL.style.visibility = "visible";
-  }
-}
-
-
+	COURSES_TAB.show();
+});
 
