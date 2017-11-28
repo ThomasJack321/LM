@@ -218,6 +218,10 @@ BACK_ARROW.hide();
 
 var loggedUser = null;
 
+BACK_ARROW.addEventListener('click', function() {
+  BACK_ARROW.customAction();
+});
+
 LOGIN_FORM.addEventListener('submit', function(event) {
   event.preventDefault();
 
