@@ -87,7 +87,7 @@ var usersCollection = new UsersCollection([
 ]);
 
 var LOGIN_FORM = $('logForm');
-var WELCOME_LABEL = $('welcomeLabel')
+var WELCOME_PANEL = $('welcomeLabel')
 var loggedUser = null;
 
 LOGIN_FORM.addEventListener('submit', function(event) {
@@ -133,7 +133,8 @@ var LoginInitialization = function(loggedUser) {
   }
 
   this.setWelcomeLabel = function(user) {
-    WELCOME_LABEL.textContent = 'Welcome, ' + user.login + '!';
+    WELCOME_PANEL.getElementsByTagName('span')[0].textContent = 'Welcome, ' + user.login + '!';
+    WELCOME_PANEL.style.visibility = "visible";
   }
 }
 
