@@ -9,7 +9,7 @@ Object.prototype.hide = function () {
 }
 
 Object.prototype.show = function () {
-  this.style.display = "initial";
+  this.style.display = "inherit";
 }
 
 var Category = function (id, name, description) {
@@ -54,6 +54,10 @@ var User = function (id, categories, login, password) {
 
   this.getUserCategories = function (){
     return this.categories;
+  }
+
+  this.getId = function() {
+    return this.id;
   }
 }
 
@@ -111,13 +115,8 @@ var LoginInitialization = function(loggedUser) {
   this.user = loggedUser;
 
   this.initialize = function() {
-    this.dumpWelcomeMessage();
     this.setWelcomeLabel(this.user);
     this.showDashboard();
-  }
-
-  this.dumpWelcomeMessage = function() {
-    alert('You have been logged in.');
   }
 
   this.setWelcomeLabel = function(user) {
@@ -131,41 +130,25 @@ var LoginInitialization = function(loggedUser) {
 }
 
 var CoursesHandler = function() {
-  this.generateCoursesOverview = function(user) {
+  this.generateCoursesOverview = function(user, callback) {
     COURSES_TAB.innerHTML = "";
 
     var categories = user.getUserCategories();
     var coursesBlock = document.createElement('div');
     for (var i = 0 ; i < categories.length; i++) {
-      coursesBlock.appendChild(this.createNodeForCategory(CategoriesCollection.findBy('id', categories[i].id)));
+      coursesBlock.appendChild(this.createNodeForCategory(CategoriesCollection.findBy('id', categories[i].id), callback));
     }
 
     COURSES_TAB.appendChild(coursesBlock);
   }
 
-  this.createNodeForCategory = function(category) {
+  this.createNodeForCategory = function(category, callback) {
     var listElement = document.createElement('div');
     listElement.className = 'category';
     listElement.dataset.categoryId = category.getId();
     listElement.textContent = category.getName();
-    listElement.addEventListener('click', function() {
-      var categoryId = this.dataset.categoryId;
-      var category = CategoriesCollection.findBy('id', categoryId);
-
-      if (null !== category) {
-        COURSES_TAB.hide();
-        var categoryHandler = new CategoryHandler(category);
-        var categoryTab = categoryHandler.createCategoryPage(loggedUser);
-        categoryTab.show();
-        CONTENT_BLOCK.appendChild(categoryTab);
-
-        BACK_ARROW.customAction = function () {
-          categoryTab.hide();
-          COURSES_TAB.click();
-        }
-      }
-    });
-
+    listElement.addEventListener('click', callback);
+    listElement.className = 'clickable';
     return listElement;
   }
 }
@@ -198,6 +181,44 @@ var CategoryHandler = function (category) {
   }
 }
 
+var BackArrowManager = function (backArrowNode) {
+  this.backArrow = backArrowNode;
+  this.history = [];
+
+  this.addToHistory = function (callback) {
+    if (callback !== this.history[this.history.length - 1]) {
+      this.history.push(callback);
+    }
+    this.checkState();
+  }
+
+  this.goBack = function () {
+    if (this.history.length) {
+      var callback = this.history.pop();
+      callback();
+    }
+    this.checkState();
+  }
+
+  this.checkState = function () {
+    if (this.history.length) {
+      backArrowNode.show();
+    } else {
+      backArrowNode.hide();
+    }
+  }
+
+  this.checkState();
+}
+
+function hideTabs() {
+  var contentElements = CONTENT_BLOCK.querySelectorAll('#content > *:not([id=back_arrow])')
+  contentElements.forEach(function (elem) {
+    elem.hide();
+  });
+}
+
+//GLOBAL DOM ELEMENTS
 var LOGIN_FORM = $('logForm');
 var WELCOME_PANEL = $('welcomePanel')
 var DASHBOARD_TAB = $('mainshit');
@@ -207,19 +228,43 @@ var COURSES_TAB = $('coursesPage');
 var CONTENT_BLOCK = $('content');
 var BACK_ARROW = $('back_arrow');
 var COURSES_BUTTON = $('courses');
+var TEAM_BUTTON = $('team');
+var ABOUT_BUTTON = $('about');
+var LOGOUT_BUTTON = $('signOut');
+var MENU_COURSES = $('coursesSide');
+var MENU_TEAM = $('teamSide');
+var MENU_ABOUT = $('aboutSide');
 
-//LOGIN_FORM.show();
-DASHBOARD_TAB.hide();
-WELCOME_PANEL.hide();
-TEAM_TAB.hide();
-ABOUT_TAB.hide();
-COURSES_TAB.hide();
-BACK_ARROW.hide();
+showDashboard();
+function showDashboard () {
+  hideTabs();
+  DASHBOARD_TAB.show();
+}
 
+var backArrowManager = new BackArrowManager(BACK_ARROW);
 var loggedUser = null;
+(function (){
+  var loggedUserId = localStorage.getItem('loggedUserId');
+  if (null !== loggedUserId) {
+    loggedUser = usersCollection.findBy('id', loggedUserId);
+  }
+
+  if (null !== loggedUser) {
+    LOGIN_FORM.hide();
+    var loginInitialization = new LoginInitialization(loggedUser);
+    loginInitialization.initialize();
+  } else {
+    hideTabs();
+  }
+})();
+
+LOGOUT_BUTTON.addEventListener('click', function () {
+  localStorage.removeItem('loggedUserId');
+  location.reload();
+});
 
 BACK_ARROW.addEventListener('click', function() {
-  BACK_ARROW.customAction();
+  backArrowManager.goBack();
 });
 
 LOGIN_FORM.addEventListener('submit', function(event) {
@@ -233,6 +278,7 @@ LOGIN_FORM.addEventListener('submit', function(event) {
     loggedUser = user;
     var loginInitialization = new LoginInitialization(user);
     loginInitialization.initialize();
+    localStorage.setItem('loggedUserId', loggedUser.getId());
 
     this.hide();
   } else {
@@ -242,16 +288,44 @@ LOGIN_FORM.addEventListener('submit', function(event) {
 
 COURSES_BUTTON.addEventListener('click', function() {
 	var coursesHandler = new CoursesHandler();
-	coursesHandler.generateCoursesOverview(loggedUser);
-  DASHBOARD_TAB.hide();
+	coursesHandler.generateCoursesOverview(loggedUser, function() {
+    var categoryId = this.dataset.categoryId;
+    var category = CategoriesCollection.findBy('id', categoryId);
+
+    if (null !== category) {
+      var categoryHandler = new CategoryHandler(category);
+      var categoryTab = categoryHandler.createCategoryPage(loggedUser);
+      hideTabs();
+      categoryTab.show();
+      CONTENT_BLOCK.appendChild(categoryTab);
+      backArrowManager.addToHistory(function () {COURSES_BUTTON.click()});
+    }
+  });
+	hideTabs();
   COURSES_TAB.show();
-
-	BACK_ARROW.show();
-	BACK_ARROW.customAction = function () {
-		COURSES_TAB.hide();
-		DASHBOARD_TAB.show();
-	}
-
-	COURSES_TAB.show();
+	backArrowManager.addToHistory(showDashboard);
 });
 
+TEAM_BUTTON.addEventListener('click', function() {
+  hideTabs();
+  TEAM_TAB.show();
+  backArrowManager.addToHistory(showDashboard);
+});
+
+ABOUT_BUTTON.addEventListener('click', function() {
+  hideTabs();
+  ABOUT_TAB.show();
+  backArrowManager.addToHistory(showDashboard);
+});
+
+MENU_ABOUT.addEventListener('click', function () {
+  ABOUT_BUTTON.click();
+});
+
+MENU_TEAM.addEventListener('click', function () {
+  TEAM_BUTTON.click();
+});
+
+MENU_COURSES.addEventListener('click', function () {
+  COURSES_BUTTON.click();
+});
