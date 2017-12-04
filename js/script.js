@@ -311,11 +311,13 @@ COURSES_BUTTON.addEventListener('click', function() {
 	hideTabs();
   COURSES_TAB.show();
 	backArrowManager.addToHistory(showDashboard);
+  document.getElementById('preContent').style.display = "none";
 });
 
 TEAM_BUTTON.addEventListener('click', function() {
   hideTabs();
   TEAM_TAB.show();
+  document.getElementById('preContent').style.display = "none";
   backArrowManager.addToHistory(showDashboard);
 });
 
@@ -323,6 +325,7 @@ ABOUT_BUTTON.addEventListener('click', function() {
   hideTabs();
   ABOUT_TAB.show();
   backArrowManager.addToHistory(showDashboard);
+  document.getElementById('preContent').style.display = "none";
 });
 
 MENU_ABOUT.addEventListener('click', function () {
