@@ -93,6 +93,7 @@ var UsersCollection = function(itemCollection) {
     var user = this.findBy('login', login);
     if (null !== user && user.password === password) {
       loggedIn = true;
+	  document.getElementById('preContent').style.display = "none";
     }
 
     return loggedIn;
@@ -205,6 +206,8 @@ var BackArrowManager = function (backArrowNode) {
       backArrowNode.show();
     } else {
       backArrowNode.hide();
+//	document.getElementById('notLoggedYet').style.display = "block";
+//	document.getElementById('notLoggedYet').style.visibility = "visible";
     }
   }
 
@@ -220,7 +223,7 @@ function hideTabs() {
 
 //GLOBAL DOM ELEMENTS
 var LOGIN_FORM = $('logForm');
-var WELCOME_PANEL = $('welcomePanel')
+var WELCOME_PANEL = $('welcomePanel');
 var DASHBOARD_TAB = $('mainshit');
 var TEAM_TAB = $('teamPage');
 var ABOUT_TAB = $('aboutPage');
@@ -234,6 +237,7 @@ var LOGOUT_BUTTON = $('signOut');
 var MENU_COURSES = $('coursesSide');
 var MENU_TEAM = $('teamSide');
 var MENU_ABOUT = $('aboutSide');
+var NOT_LOGGED_YET = $('notLoggedYet');
 
 showDashboard();
 function showDashboard () {
@@ -254,6 +258,7 @@ var loggedUser = null;
     var loginInitialization = new LoginInitialization(loggedUser);
     loginInitialization.initialize();
   } else {
+	document.getElementById('preContent').style.visibility = "visible";
     hideTabs();
   }
 })();
@@ -282,7 +287,9 @@ LOGIN_FORM.addEventListener('submit', function(event) {
 
     this.hide();
   } else {
-    alert('Provided credentials are incorrect')
+	document.getElementById('notLoggedYet').style.display = "block";
+	document.getElementById('notLoggedYet').style.visibility = "visible";
+    alert('Provided credentials are incorrect');
   }
 });
 
